@@ -3,8 +3,6 @@ package ru.practicum.shareit.item.repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.util.exeption.NotFoundException;
-import ru.practicum.shareit.util.exeption.NotFoundExceptionEntity;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -13,61 +11,46 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ItemDbRepository implements ItemRepository {
 
-    Map<Long, List<Item>> itemRepository = new HashMap<>();
-    private Long id = 1L;
+    private final Map<Long, Item> itemStorage = new HashMap<>();
 
     @Override
     public Item create(Long userId, Item item) {
-        List<Item> listItems = itemRepository.getOrDefault(userId, new ArrayList<>());
-        item.setId(id);
         item.setOwner(userId);
-        listItems.add(item);
-        itemRepository.put(userId, listItems);
-        id++;
+        itemStorage.put(item.getId(), item);
         return item;
     }
 
     @Override
-    public Item update(Long userId, Long itemId, Item item) {
-        if (itemRepository.get(userId) == null) {
-            throw new NotFoundExceptionEntity("Владелец item с идентификатором : " + userId + " указан не верно.");
-        }
-        Item updateItem = findById(itemId);
-        if (item.getName() != null) {
-            updateItem.setName(item.getName());
-        }
-        if (item.getDescription() != null) {
-            updateItem.setDescription(item.getDescription());
-        }
-        if (item.getAvailable() != null) {
-            updateItem.setAvailable(item.getAvailable());
-        }
-        return updateItem;
+    public Item update(Item item) {
+        itemStorage.put(item.getId(), item);
+        return itemStorage.get(item.getId());
     }
 
     @Override
     public Item findById(Long itemId) {
-        return itemRepository.values()
-                .stream()
-                .flatMap(Collection::stream)
-                .filter(i -> i.getId().equals(itemId))
-                .findAny()
-                .orElseThrow(() -> new NotFoundException("Item с идентификатором : " + itemId + " не найден."));
+        return itemStorage.get(itemId);
     }
 
     @Override
     public List<Item> findAll(Long userId) {
-        return new ArrayList<>(itemRepository.get(userId));
+        return itemStorage.values()
+                .stream()
+                .filter(item -> item.getOwner().equals(userId))
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<Item> searchItems(String text) {
-        return itemRepository.values()
+        return itemStorage.values()
                 .stream()
-                .flatMap(Collection::stream)
                 .filter(i -> i.getName().toLowerCase().contains(text.toLowerCase()) ||
-                        i.getDescription().toLowerCase().contains(text.toLowerCase()) && i.getAvailable())
+                        i.getDescription().toLowerCase().contains(text.toLowerCase()) && i.getIsAvailable())
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Item> getItemStorage() {
+        return new ArrayList<>(itemStorage.values());
     }
 }
 
