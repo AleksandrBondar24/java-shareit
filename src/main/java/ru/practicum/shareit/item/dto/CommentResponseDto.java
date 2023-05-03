@@ -1,7 +1,6 @@
-package ru.practicum.shareit.request.dto;
+package ru.practicum.shareit.item.dto;
 
 import lombok.*;
-import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 
@@ -11,9 +10,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @EqualsAndHashCode
 @ToString
-public class ItemRequestDto {
+public class CommentResponseDto {
     private Long id;
-    private String description;
-    private User requestor;
+    private String text;
+    private String authorName;
     private LocalDateTime created;
 }
+

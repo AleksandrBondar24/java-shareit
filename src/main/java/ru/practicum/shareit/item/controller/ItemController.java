@@ -3,11 +3,15 @@ package ru.practicum.shareit.item.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.CommentResponseDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.util.exeption.NotFoundException;
 
-import java.util.ArrayList;
+import javax.validation.Valid;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -36,27 +40,36 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto findById(@RequestHeader("X-Sharer-User-Id") Long userId,
-                            @PathVariable Long itemId) {
-        ItemDto itemDto = itemService.findById(itemId);
-        log.debug("Получен tem с идентификатором : {}", itemId);
-        return itemDto;
+    public ItemResponseDto findById(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                    @PathVariable Long itemId) {
+        ItemResponseDto itemsDto = itemService.findById(itemId, userId);
+        log.debug("Получен item с идентификатором : {}", itemId);
+        return itemsDto;
     }
 
     @GetMapping
-    public List<ItemDto> findAll(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        List<ItemDto> findAllItem = itemService.findAll(userId);
+    public List<ItemResponseDto> findAll(@RequestHeader("X-Sharer-User-Id") Long userId) {
+        List<ItemResponseDto> findAllItem = itemService.findAll(userId);
         log.debug("Получен список всех item пользователя : {}", userId);
         return findAllItem;
     }
 
     @GetMapping("/search")
     public List<ItemDto> searchItems(@RequestParam(value = "text") String text) {
-        if (text.isBlank())
-            return new ArrayList<>();
+        if (text == null || text.isBlank())
+            return Collections.emptyList();
         List<ItemDto> items = itemService.searchItems(text);
         log.debug("Получен список вещей по ключевому слову : {}", text);
         return items;
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentResponseDto createComment(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                            @Valid @RequestBody CommentDto commentDto,
+                                            @PathVariable Long itemId) {
+        CommentResponseDto commentNew = itemService.createComment(userId, commentDto, itemId);
+        log.debug("Добавлен новый отзыв для вещи : {}", itemId);
+        return commentNew;
     }
 
     private void validate(ItemDto itemDto) {

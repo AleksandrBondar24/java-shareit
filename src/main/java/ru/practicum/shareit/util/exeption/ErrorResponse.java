@@ -8,6 +8,6 @@ import lombok.Setter;
 @Setter
 @Getter
 public class ErrorResponse extends RuntimeException {
-    private String message;
+    private String error;
     private long timestamp;
 }
