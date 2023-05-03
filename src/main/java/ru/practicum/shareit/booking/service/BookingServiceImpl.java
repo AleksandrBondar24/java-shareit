@@ -19,6 +19,7 @@ import ru.practicum.shareit.util.mapper.BookingMapper;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.util.mapper.BookingMapper.toBooking;
@@ -43,7 +44,8 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new NotFoundExceptionEntity("Item с идентификатором : " + itemId + " не найден."));
         if (!item.getIsAvailable())
             throw new NotFoundException("Item не доступен для бронирования.");
-        if (item.getOwner().getId() == userId)
+        final Long id = item.getOwner().getId();
+        if (Objects.equals(id, userId))
             throw new NotFoundExceptionEntity("Бронирование своего item запрещено.");
         final Booking booking = toBooking(bookingJsonDto, item, user);
         booking.setStatus(BookingStatus.WAITING);
@@ -54,7 +56,8 @@ public class BookingServiceImpl implements BookingService {
     public BookingDto update(Long bookingId, Long userId, String approved) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundExceptionEntity("Booking с идентификатором : " + bookingId + " не найден."));
-        if (booking.getItem().getOwner().getId() != userId)
+        final Long id = booking.getItem().getOwner().getId();
+        if (!Objects.equals(id, userId))
             throw new NotFoundExceptionEntity("Пользователь с идентификатором : " + userId + " не может обновить статус item.");
         if (!booking.getStatus().equals(BookingStatus.WAITING))
             throw new NotFoundException("Статус booker должен быть WAITING.");
@@ -68,7 +71,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingDto findById(Long userId, Long bookingId) {
         return toBookingDto(bookingRepository.findById(bookingId)
-                .filter(b -> b.getBooker().getId() == userId || b.getItem().getOwner().getId() == userId)
+                .filter(b -> Objects.equals(b.getBooker().getId(), userId) || Objects.equals(b.getItem().getOwner().getId(), userId))
                 .orElseThrow(() -> new NotFoundExceptionEntity("Booking с идентификатором : " + bookingId + " не найден.")));
     }
 

@@ -24,6 +24,7 @@ import ru.practicum.shareit.util.mapper.ItemMapper;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -80,7 +81,8 @@ public class ItemServiceImpl implements ItemService {
                 .collect(Collectors.toList());
         final ItemResponseDto itemResponseDto = toItemResponseDto(item);
         itemResponseDto.setComments(comments);
-        if (userId == item.getOwner().getId()) {
+        final Long id = item.getOwner().getId();
+        if (Objects.equals(userId, id)) {
             final List<Booking> bookingList = bookingRepository.findByItem_Id(itemId);
             return saveDateBookings(itemResponseDto, bookingList);
         }
@@ -108,7 +110,7 @@ public class ItemServiceImpl implements ItemService {
         final LocalDateTime time = LocalDateTime.now();
         Optional<Booking> bookingLast = bookingList
                 .stream()
-                .filter(booking -> booking.getItem().getId() == itemsDto.getId())
+                .filter(booking -> Objects.equals(booking.getItem().getId(), itemsDto.getId()))
                 .sorted(Comparator.comparing(Booking::getEnd).reversed())
                 .filter(booking -> booking.getStatus().equals(BookingStatus.APPROVED))
                 .filter(booking -> booking.getStart().isBefore(time))
@@ -118,7 +120,7 @@ public class ItemServiceImpl implements ItemService {
 
         Optional<Booking> bookingNext = bookingList
                 .stream()
-                .filter(booking -> booking.getItem().getId() == itemsDto.getId())
+                .filter(booking -> Objects.equals(booking.getItem().getId(), itemsDto.getId()))
                 .sorted(Comparator.comparing(Booking::getStart))
                 .filter(booking -> booking.getStatus().equals(BookingStatus.APPROVED))
                 .filter(booking -> booking.getStart().isAfter(time))
@@ -147,7 +149,7 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new NotFoundExceptionEntity("Item с идентификатором : " + itemId + " не найден."));
         List<Booking> bookings = bookingRepository.findByItem_IdAndEndIsBefore(itemId, time)
                 .stream()
-                .filter(booking -> booking.getBooker().getId() == userId)
+                .filter(booking -> Objects.equals(booking.getBooker().getId(), userId))
                 .collect(Collectors.toList());
         if (bookings.isEmpty()) {
             throw new NotFoundException("Пользователь не может оставить отзыв этой вещи.");
