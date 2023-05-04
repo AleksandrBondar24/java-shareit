@@ -1,4 +1,4 @@
-package ru.practicum.shareit.util.exeption;
+package ru.practicum.shareit.exeption;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,6 +8,6 @@ import lombok.Setter;
 @Setter
 @Getter
 public class ErrorResponse extends RuntimeException {
-    private String message;
+    private String error;
     private long timestamp;
 }
