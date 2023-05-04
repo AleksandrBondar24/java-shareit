@@ -15,11 +15,11 @@ import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
-import ru.practicum.shareit.util.enums.BookingStatus;
-import ru.practicum.shareit.util.exeption.NotFoundException;
-import ru.practicum.shareit.util.exeption.NotFoundExceptionEntity;
-import ru.practicum.shareit.util.mapper.CommentMapper;
-import ru.practicum.shareit.util.mapper.ItemMapper;
+import ru.practicum.shareit.booking.BookingStatus;
+import ru.practicum.shareit.exeption.NotFoundException;
+import ru.practicum.shareit.exeption.NotFoundExceptionEntity;
+import ru.practicum.shareit.item.CommentMapper;
+import ru.practicum.shareit.item.ItemMapper;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -28,10 +28,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static ru.practicum.shareit.util.mapper.BookingMapper.toBookingItemDto;
-import static ru.practicum.shareit.util.mapper.CommentMapper.toComment;
-import static ru.practicum.shareit.util.mapper.CommentMapper.toCommentResponseDto;
-import static ru.practicum.shareit.util.mapper.ItemMapper.*;
+import static ru.practicum.shareit.booking.BookingMapper.toBookingItemDto;
+import static ru.practicum.shareit.item.CommentMapper.toComment;
+import static ru.practicum.shareit.item.CommentMapper.toCommentResponseDto;
+import static ru.practicum.shareit.item.ItemMapper.*;
 
 
 @Service
@@ -142,19 +142,17 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public CommentResponseDto createComment(Long userId, CommentDto commentDto, Long itemId) {
         final Comment comment = toComment(commentDto);
-        final LocalDateTime time = LocalDateTime.now();
         final User author = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundExceptionEntity("Пользователь с идентификатором : " + userId + " не найден."));
         final Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundExceptionEntity("Item с идентификатором : " + itemId + " не найден."));
-        List<Booking> bookings = bookingRepository.findByItem_IdAndEndIsBefore(itemId, time)
+        List<Booking> bookings = bookingRepository.findByItem_IdAndEndIsBefore(itemId, comment.getCreated())
                 .stream()
                 .filter(booking -> Objects.equals(booking.getBooker().getId(), userId))
                 .collect(Collectors.toList());
         if (bookings.isEmpty()) {
             throw new NotFoundException("Пользователь не может оставить отзыв этой вещи.");
         }
-        comment.setCreated(time);
         comment.setAuthor(author);
         comment.setItem(item);
         commentRepository.save(comment);

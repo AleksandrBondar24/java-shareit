@@ -11,19 +11,20 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
-import ru.practicum.shareit.util.enums.BookingState;
-import ru.practicum.shareit.util.enums.BookingStatus;
-import ru.practicum.shareit.util.exeption.NotFoundException;
-import ru.practicum.shareit.util.exeption.NotFoundExceptionEntity;
-import ru.practicum.shareit.util.mapper.BookingMapper;
+import ru.practicum.shareit.booking.BookingState;
+import ru.practicum.shareit.booking.BookingStatus;
+import ru.practicum.shareit.exeption.NotFoundException;
+import ru.practicum.shareit.exeption.NotFoundExceptionEntity;
+import ru.practicum.shareit.booking.BookingMapper;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static ru.practicum.shareit.util.mapper.BookingMapper.toBooking;
-import static ru.practicum.shareit.util.mapper.BookingMapper.toBookingDto;
+import static java.util.Collections.emptyList;
+import static ru.practicum.shareit.booking.BookingMapper.toBooking;
+import static ru.practicum.shareit.booking.BookingMapper.toBookingDto;
 
 @Service
 @RequiredArgsConstructor
@@ -48,12 +49,11 @@ public class BookingServiceImpl implements BookingService {
         if (Objects.equals(id, userId))
             throw new NotFoundExceptionEntity("Бронирование своего item запрещено.");
         final Booking booking = toBooking(bookingJsonDto, item, user);
-        booking.setStatus(BookingStatus.WAITING);
         return toBookingDto(bookingRepository.save(booking));
     }
 
     @Override
-    public BookingDto update(Long bookingId, Long userId, String approved) {
+    public BookingDto update(Long bookingId, Long userId, boolean isApproved) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundExceptionEntity("Booking с идентификатором : " + bookingId + " не найден."));
         final Long id = booking.getItem().getOwner().getId();
@@ -61,9 +61,9 @@ public class BookingServiceImpl implements BookingService {
             throw new NotFoundExceptionEntity("Пользователь с идентификатором : " + userId + " не может обновить статус item.");
         if (!booking.getStatus().equals(BookingStatus.WAITING))
             throw new NotFoundException("Статус booker должен быть WAITING.");
-        if (approved.equals("true"))
+        if (isApproved)
             booking.setStatus(BookingStatus.APPROVED);
-        if (approved.equals("false"))
+        else
             booking.setStatus(BookingStatus.REJECTED);
         return toBookingDto(bookingRepository.save(booking));
     }
@@ -83,40 +83,33 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new NotFoundExceptionEntity("Пользователь с идентификатором : " + userId + " не найден."));
         final LocalDateTime date = LocalDateTime.now();
         final Sort sort = Sort.by("start").descending();
+        List<Booking> bookings;
         switch (bookingState) {
             case ALL:
-                return bookingRepository.findAllByBooker_Id(userId, sort)
-                        .stream()
-                        .map(BookingMapper::toBookingDto)
-                        .collect(Collectors.toList());
+                bookings = bookingRepository.findAllByBooker_Id(userId, sort);
+                break;
             case CURRENT:
-                return bookingRepository.findByBooker_IdAndStartIsBeforeAndEndIsAfter(userId, date, date, sort)
-                        .stream()
-                        .map(BookingMapper::toBookingDto)
-                        .collect(Collectors.toList());
+                bookings = bookingRepository.findByBooker_IdAndStartIsBeforeAndEndIsAfter(userId, date, date, sort);
+                break;
             case PAST:
-                return bookingRepository.findByBooker_IdAndEndIsBefore(userId, date, sort)
-                        .stream()
-                        .map(BookingMapper::toBookingDto)
-                        .collect(Collectors.toList());
+                bookings = bookingRepository.findByBooker_IdAndEndIsBefore(userId, date, sort);
+                break;
             case FUTURE:
-                return bookingRepository.findByBooker_IdAndStartIsAfter(userId, date, sort)
-                        .stream()
-                        .map(BookingMapper::toBookingDto)
-                        .collect(Collectors.toList());
+                bookings = bookingRepository.findByBooker_IdAndStartIsAfter(userId, date, sort);
+                break;
             case WAITING:
-                return bookingRepository.findByBooker_IdAndStartIsAfterAndStatusIs(userId, date, sort, BookingStatus.WAITING)
-                        .stream()
-                        .map(BookingMapper::toBookingDto)
-                        .collect(Collectors.toList());
+                bookings = bookingRepository.findByBooker_IdAndStartIsAfterAndStatusIs(userId, date, sort, BookingStatus.WAITING);
+                break;
             case REJECTED:
-                return bookingRepository.findByBooker_IdAndStartIsAfterAndStatusIs(userId, date, sort, BookingStatus.REJECTED)
-                        .stream()
-                        .map(BookingMapper::toBookingDto)
-                        .collect(Collectors.toList());
+                bookings = bookingRepository.findByBooker_IdAndStartIsAfterAndStatusIs(userId, date, sort, BookingStatus.REJECTED);
+                break;
             default:
-                return null;
+                return emptyList();
         }
+        return bookings
+                .stream()
+                .map(BookingMapper::toBookingDto)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -131,39 +124,32 @@ public class BookingServiceImpl implements BookingService {
                 .collect(Collectors.toList());
         final LocalDateTime date = LocalDateTime.now();
         final Sort sort = Sort.by("start").descending();
+        List<Booking> bookings;
         switch (bookingState) {
             case ALL:
-                return bookingRepository.findAllByItem_IdIn(itemIdList, sort)
-                        .stream()
-                        .map(BookingMapper::toBookingDto)
-                        .collect(Collectors.toList());
+                bookings = bookingRepository.findAllByItem_IdIn(itemIdList, sort);
+                break;
             case CURRENT:
-                return bookingRepository.findByItem_IdInAndStartIsBeforeAndEndIsAfter(itemIdList, date, date, sort)
-                        .stream()
-                        .map(BookingMapper::toBookingDto)
-                        .collect(Collectors.toList());
+                bookings = bookingRepository.findByItem_IdInAndStartIsBeforeAndEndIsAfter(itemIdList, date, date, sort);
+                break;
             case PAST:
-                return bookingRepository.findByItem_IdInAndEndIsBefore(itemIdList, date, sort)
-                        .stream()
-                        .map(BookingMapper::toBookingDto)
-                        .collect(Collectors.toList());
+                bookings = bookingRepository.findByItem_IdInAndEndIsBefore(itemIdList, date, sort);
+                break;
             case FUTURE:
-                return bookingRepository.findByItem_IdInAndStartIsAfter(itemIdList, date, sort)
-                        .stream()
-                        .map(BookingMapper::toBookingDto)
-                        .collect(Collectors.toList());
+                bookings = bookingRepository.findByItem_IdInAndStartIsAfter(itemIdList, date, sort);
+                break;
             case WAITING:
-                return bookingRepository.findByItem_IdInAndStartIsAfterAndStatusIs(itemIdList, date, sort, BookingStatus.WAITING)
-                        .stream()
-                        .map(BookingMapper::toBookingDto)
-                        .collect(Collectors.toList());
+                bookings = bookingRepository.findByItem_IdInAndStartIsAfterAndStatusIs(itemIdList, date, sort, BookingStatus.WAITING);
+                break;
             case REJECTED:
-                return bookingRepository.findByItem_IdInAndStartIsAfterAndStatusIs(itemIdList, date, sort, BookingStatus.REJECTED)
-                        .stream()
-                        .map(BookingMapper::toBookingDto)
-                        .collect(Collectors.toList());
+                bookings = bookingRepository.findByItem_IdInAndStartIsAfterAndStatusIs(itemIdList, date, sort, BookingStatus.REJECTED);
+                break;
             default:
-                return null;
+                return emptyList();
         }
+        return bookings
+                .stream()
+                .map(BookingMapper::toBookingDto)
+                .collect(Collectors.toList());
     }
 }

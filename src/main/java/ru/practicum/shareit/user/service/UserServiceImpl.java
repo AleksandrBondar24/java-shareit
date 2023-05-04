@@ -6,16 +6,16 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
-import ru.practicum.shareit.util.exeption.NotFoundExceptionEntity;
-import ru.practicum.shareit.util.mapper.UserMapper;
+import ru.practicum.shareit.exeption.NotFoundExceptionEntity;
+import ru.practicum.shareit.user.UserMapper;
 
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static ru.practicum.shareit.util.mapper.UserMapper.toUser;
-import static ru.practicum.shareit.util.mapper.UserMapper.toUserDto;
+import static ru.practicum.shareit.user.UserMapper.toUser;
+import static ru.practicum.shareit.user.UserMapper.toUserDto;
 
 @Service
 @Transactional(readOnly = true)

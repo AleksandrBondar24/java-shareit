@@ -8,7 +8,7 @@ import ru.practicum.shareit.item.dto.CommentResponseDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.service.ItemService;
-import ru.practicum.shareit.util.exeption.NotFoundException;
+import ru.practicum.shareit.exeption.NotFoundException;
 
 import javax.validation.Valid;
 import java.util.Collections;

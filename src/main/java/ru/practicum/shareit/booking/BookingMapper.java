@@ -1,4 +1,4 @@
-package ru.practicum.shareit.util.mapper;
+package ru.practicum.shareit.booking;
 
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingJsonDto;
@@ -25,6 +25,7 @@ public class BookingMapper {
         booking.setStart(bookingJsonDto.getStart());
         booking.setItem(item);
         booking.setBooker(user);
+        booking.setStatus(BookingStatus.WAITING);
         return booking;
     }
 

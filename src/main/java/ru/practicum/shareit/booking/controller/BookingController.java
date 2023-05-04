@@ -30,7 +30,8 @@ public class BookingController {
     public BookingDto update(@RequestHeader("X-Sharer-User-Id") Long userId,
                              @PathVariable Long bookingId,
                              @RequestParam(value = "approved") String approved) {
-        BookingDto bookingDto = bookingService.update(bookingId, userId, approved);
+        boolean isApproved = approved.equals("true");
+        BookingDto bookingDto = bookingService.update(bookingId, userId, isApproved);
         log.debug("Обновлен статус booking на item с идентификатором : {}", bookingId);
         return bookingDto;
     }
