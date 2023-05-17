@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.model.Booking;
@@ -13,6 +14,8 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.booking.BookingStatus;
@@ -42,6 +45,7 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
     @Transactional
     @Override
@@ -50,6 +54,12 @@ public class ItemServiceImpl implements ItemService {
         final User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundExceptionEntity("Пользователь с идентификатором : " + userId + " не найден."));
         item.setOwner(user);
+        final Long requestId = itemDto.getRequestId();
+        if (requestId != null) {
+            final ItemRequest itemRequest = itemRequestRepository.findById(requestId)
+                    .orElseThrow(() -> new NotFoundExceptionEntity("Запрос на бронирование вещи не найден."));
+            item.setRequest(itemRequest);
+        }
         return toItemDto(itemRepository.save(item));
     }
 
@@ -83,36 +93,34 @@ public class ItemServiceImpl implements ItemService {
         itemResponseDto.setComments(comments);
         final Long id = item.getOwner().getId();
         if (Objects.equals(userId, id)) {
-            final List<Booking> bookingList = bookingRepository.findByItem_Id(itemId);
-            return saveDateBookings(itemResponseDto, bookingList);
+            final List<Booking> bookingList = bookingRepository.findByItem_IdAndStatusIs(itemId, BookingStatus.APPROVED);
+            return setDateBookings(itemResponseDto, bookingList);
         }
         return itemResponseDto;
     }
 
     @Override
-    public List<ItemResponseDto> findAll(Long userId) {
-        final List<ItemResponseDto> itemsList = itemRepository.findAllByOwnerId(userId)
-                .stream()
+    public List<ItemResponseDto> findAll(Long userId,PageRequest page) {
+        final List<ItemResponseDto> itemsList = itemRepository.findAllByOwnerId(userId,page)
                 .map(ItemMapper::toItemResponseDto)
-                .collect(Collectors.toList());
+                .getContent();
         final List<Long> itemsId = itemsList
                 .stream()
                 .map(ItemResponseDto::getId)
                 .collect(Collectors.toList());
-        final List<Booking> bookingList = bookingRepository.findAllByItem_IdIn(itemsId);
+        final List<Booking> bookingList = bookingRepository.findAllByItem_IdInAndStatusIs(itemsId, BookingStatus.APPROVED);
         return itemsList
                 .stream()
-                .map(itemsDto -> saveDateBookings(itemsDto, bookingList))
+                .map(itemsDto -> setDateBookings(itemsDto, bookingList))
                 .collect(Collectors.toList());
     }
 
-    private ItemResponseDto saveDateBookings(ItemResponseDto itemsDto, List<Booking> bookingList) {
+    private ItemResponseDto setDateBookings(ItemResponseDto itemsDto, List<Booking> bookingList) {
         final LocalDateTime time = LocalDateTime.now();
         Optional<Booking> bookingLast = bookingList
                 .stream()
                 .filter(booking -> Objects.equals(booking.getItem().getId(), itemsDto.getId()))
                 .sorted(Comparator.comparing(Booking::getEnd).reversed())
-                .filter(booking -> booking.getStatus().equals(BookingStatus.APPROVED))
                 .filter(booking -> booking.getStart().isBefore(time))
                 .limit(1)
                 .findAny();
@@ -122,7 +130,6 @@ public class ItemServiceImpl implements ItemService {
                 .stream()
                 .filter(booking -> Objects.equals(booking.getItem().getId(), itemsDto.getId()))
                 .sorted(Comparator.comparing(Booking::getStart))
-                .filter(booking -> booking.getStatus().equals(BookingStatus.APPROVED))
                 .filter(booking -> booking.getStart().isAfter(time))
                 .limit(1)
                 .findAny();
@@ -131,11 +138,12 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> searchItems(String text) {
-        return itemRepository.findAllByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndIsAvailableIsTrue(text, text)
-                .stream()
+    public List<ItemDto> searchItems(Long userId, String text, PageRequest page) {
+        if (!userRepository.existsById(userId))
+            throw new NotFoundExceptionEntity("Пользователь с идентификатором : " + userId + " не найден.");
+        return itemRepository.findAllByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndIsAvailableIsTrue(text, text, page)
                 .map(ItemMapper::toItemDto)
-                .collect(Collectors.toList());
+                .getContent();
     }
 
     @Transactional

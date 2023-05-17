@@ -18,7 +18,7 @@ public class ItemResponseDto {
     private String description;
     private Boolean available;
     private User owner;
-    private Long request;
+    private Long requestId;
     private BookingItemDto lastBooking;
     private BookingItemDto nextBooking;
     private List<CommentResponseDto> comments;
@@ -29,7 +29,7 @@ public class ItemResponseDto {
         this.description = description;
         this.available = available;
         this.owner = owner;
-        this.request = request;
+        this.requestId = request;
     }
 
     @Getter
