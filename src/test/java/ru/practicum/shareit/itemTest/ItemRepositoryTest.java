@@ -43,7 +43,7 @@ public class ItemRepositoryTest {
     private ItemRequestRepository itemRequestRepository;
     private User owner;
     private ItemRequest itemRequest;
-    final private PageRequest page = PageRequest.of(0, 10);
+    final PageRequest page = PageRequest.of(0, 10);
 
     @BeforeEach
     public void createEnvironment() {

@@ -183,8 +183,8 @@ public class ItemServiceImplTest {
         assertThat(result, notNullValue());
         assertThat("isEmpty", result.isEmpty());
         verify(userRepository, times(1)).findById(anyLong());
-        verify(itemRepository, times(1)).
-                findAllByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndIsAvailableIsTrue(anyString(), anyString(), any());
+        verify(itemRepository, times(1))
+                .findAllByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndIsAvailableIsTrue(anyString(), anyString(), any());
     }
 
     @Test

@@ -37,7 +37,7 @@ public class BookingRepositoryTest {
     private Booking booking;
     private Item item;
     private User user;
-    final private PageRequest page = PageRequest.of(0, 10);
+    final PageRequest page = PageRequest.of(0, 10);
 
     @BeforeEach
     public void createEnvironment() {
