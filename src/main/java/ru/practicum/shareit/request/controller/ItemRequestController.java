@@ -20,19 +20,19 @@ import java.util.List;
 @RequiredArgsConstructor
 @Validated
 public class ItemRequestController {
-    private final ItemRequestService itemRequestDtoService;
+    private final ItemRequestService itemRequestService;
 
     @PostMapping
     public ItemRequestDto create(@RequestHeader("X-Sharer-User-Id") Long userId,
                                  @Valid @RequestBody ItemRequestDto itemRequestDto) {
-        final ItemRequestDto itemRequestDtoNew = itemRequestDtoService.create(userId, itemRequestDto);
+        final ItemRequestDto itemRequestDtoNew = itemRequestService.create(userId, itemRequestDto);
         log.debug("Создан запрос на бронирование вещи с описание: {}", itemRequestDto.getDescription());
         return itemRequestDtoNew;
     }
 
     @GetMapping
     public List<ItemRequestDto> findAllByOwner(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        final List<ItemRequestDto> itemRequestDto = itemRequestDtoService.findAllByOwner(userId);
+        final List<ItemRequestDto> itemRequestDto = itemRequestService.findAllByOwner(userId);
         log.debug("Получен список всех запросов пользователя: {}", userId);
         return itemRequestDto;
     }
@@ -43,7 +43,7 @@ public class ItemRequestController {
                                         @Positive @RequestParam(value = "size", defaultValue = "10") Integer size) {
         final Sort sort = Sort.by("created").descending();
         final PageRequest page = PageRequest.of(from > 0 ? from / size : 0, size, sort);
-        final List<ItemRequestDto> itemRequestDto = itemRequestDtoService.findAll(userId, page);
+        final List<ItemRequestDto> itemRequestDto = itemRequestService.findAll(userId, page);
         log.debug("Получен список всех запросов для пользователя: {}", userId);
         return itemRequestDto;
     }
@@ -51,7 +51,7 @@ public class ItemRequestController {
     @GetMapping("/{requestId}")
     public ItemRequestDto findByRequestId(@RequestHeader("X-Sharer-User-Id") Long userId,
                                           @PathVariable Long requestId) {
-        final ItemRequestDto itemRequestDto = itemRequestDtoService.findByRequestId(userId, requestId);
+        final ItemRequestDto itemRequestDto = itemRequestService.findByRequestId(userId, requestId);
         log.debug("Получен запрос на бронирование: {}", requestId);
         return itemRequestDto;
     }

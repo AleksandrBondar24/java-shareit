@@ -1,4 +1,4 @@
-package ru.practicum.shareit;
+package ru.practicum.shareit.bookingTest;
 
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,7 +28,7 @@ import static org.hamcrest.Matchers.notNullValue;
         properties = "db.name=test",
         webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-public class BookingServiceImpIntegrationTest {
+public class BookingServiceImplIntegrationTest {
 
     private final ItemRepository itemRepository;
 
@@ -39,7 +39,6 @@ public class BookingServiceImpIntegrationTest {
     private BookingService bookingService;
     private User user;
     private User owner;
-    private Item item;
     private BookingRequestDto bookingRequestDto;
 
     @BeforeEach
@@ -51,7 +50,7 @@ public class BookingServiceImpIntegrationTest {
         owner = new User();
         owner.setName("Женя");
         owner.setEmail("54321@mail.ru");
-        item = new Item();
+        Item item = new Item();
         item.setOwner(owner);
         item.setIsAvailable(true);
         item.setName("Дрель");
@@ -73,7 +72,7 @@ public class BookingServiceImpIntegrationTest {
     @Test
     void updateBooking() {
         var isApproved = true;
-        final Long bookingId = bookingService.create(bookingRequestDto, user.getId()).getId();
+        final var bookingId = bookingService.create(bookingRequestDto, user.getId()).getId();
         var result = bookingService.update(bookingId, owner.getId(), isApproved);
 
         assertThat(result, notNullValue());
@@ -98,6 +97,7 @@ public class BookingServiceImpIntegrationTest {
         assertThat(result, notNullValue());
         assertThat(result.size(), equalTo(1));
     }
+
     @Test
     void getAllBookingsByOwner() {
         bookingService.create(bookingRequestDto, user.getId());

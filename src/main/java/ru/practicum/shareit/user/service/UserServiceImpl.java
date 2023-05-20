@@ -11,7 +11,6 @@ import ru.practicum.shareit.user.UserMapper;
 
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.user.UserMapper.toUser;
@@ -21,6 +20,7 @@ import static ru.practicum.shareit.user.UserMapper.toUserDto;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
+
     private final UserRepository userRepository;
 
     @Transactional
@@ -33,8 +33,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto findById(Long userId) {
-        Optional<User> user = userRepository.findById(userId);
-        return toUserDto(user
+        return toUserDto(userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundExceptionEntity("Пользователь с идентификатором : " + userId + " не найден.")));
     }
 
@@ -43,8 +42,7 @@ public class UserServiceImpl implements UserService {
     public UserDto update(Long userId, UserDto userDto) {
         User userUpdate = toUser(userDto);
         userUpdate.setId(userId);
-        User updatedUser = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundExceptionEntity("Пользователь с идентификатором : " + userId + " не найден."));
+        User updatedUser = chekUser(userId);
         if (userUpdate.getName() == null)
             userUpdate.setName(updatedUser.getName());
         if (userUpdate.getEmail() == null)
@@ -65,5 +63,10 @@ public class UserServiceImpl implements UserService {
                 .stream()
                 .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
+    }
+
+    private User chekUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundExceptionEntity("Пользователь с идентификатором : " + userId + " не найден."));
     }
 }

@@ -1,4 +1,4 @@
-package ru.practicum.shareit;
+package ru.practicum.shareit.bookingTest;
 
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyLong;
@@ -36,13 +36,13 @@ import ru.practicum.shareit.exeption.NotFoundException;
 @WebMvcTest(BookingController.class)
 public class BookingControllerTest {
     @Autowired
-    ObjectMapper mapper;
+    private ObjectMapper mapper;
 
     @MockBean
-    BookingService bookingService;
+    private BookingService bookingService;
 
     @Autowired
-    MockMvc mvc;
+    private MockMvc mvc;
 
     private final BookingRequestDto bookingRequestDto = new BookingRequestDto(
             1L,

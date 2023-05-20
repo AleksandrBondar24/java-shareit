@@ -1,4 +1,4 @@
-package ru.practicum.shareit;
+package ru.practicum.shareit.bookingTest;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,14 +18,14 @@ public class BookingRequestDtoJsonTest {
     private JacksonTester<BookingRequestDto> json;
 
     @Test
-    void testBookingRequestDto() throws IOException {
+    void testJsonBookingRequestDto() throws IOException {
         var jsonContent = "{\"itemId\":\"1\", \"start\":\"2023-05-22T12:00:01\", \"end\":\"2023-05-23T13:00:01\"}";
 
         var result = this.json.parse(jsonContent).getObject();
 
         assertThat(result.getItemId()).isEqualTo(1L);
-        assertThat(result.getStart()).isEqualTo(LocalDateTime.of(2023, 5,22,12, 0, 1));
-        assertThat(result.getEnd()).isEqualTo(LocalDateTime.of(2023,5,23,13,0,1));
+        assertThat(result.getStart()).isEqualTo(LocalDateTime.of(2023, 5, 22, 12, 0, 1));
+        assertThat(result.getEnd()).isEqualTo(LocalDateTime.of(2023, 5, 23, 13, 0, 1));
     }
 }
 

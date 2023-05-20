@@ -51,8 +51,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto create(Long userId, ItemDto itemDto) {
         final Item item = toItem(itemDto);
-        final User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundExceptionEntity("Пользователь с идентификатором : " + userId + " не найден."));
+        final User user = chekUser(userId);
         item.setOwner(user);
         final Long requestId = itemDto.getRequestId();
         if (requestId != null) {
@@ -66,23 +65,24 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     @Override
     public ItemDto update(Long userId, Long itemId, ItemDto itemDto) {
-        final Item itemUpdate = itemRepository.findById(itemId)
+        chekUser(userId);
+        final Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundExceptionEntity("Item с идентификатором : " + itemId + " не найден."));
-        if (!userId.equals(itemUpdate.getOwner().getId())) {
+        if (!userId.equals(item.getOwner().getId())) {
             throw new NotFoundExceptionEntity("Владелец item с идентификатором : " + userId + " указан не верно.");
         }
         if (itemDto.getName() != null)
-            itemUpdate.setName(itemDto.getName());
+            item.setName(itemDto.getName());
         if (itemDto.getDescription() != null)
-            itemUpdate.setDescription(itemDto.getDescription());
+            item.setDescription(itemDto.getDescription());
         if (itemDto.getAvailable() != null)
-            itemUpdate.setIsAvailable(itemDto.getAvailable());
-        final Item item = itemRepository.save(itemUpdate);
-        return toItemDto(item);
+            item.setIsAvailable(itemDto.getAvailable());
+        return toItemDto(itemRepository.save(item));
     }
 
     @Override
     public ItemResponseDto findById(Long itemId, Long userId) {
+        chekUser(userId);
         final Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundExceptionEntity("Item с идентификатором : " + itemId + " не найден."));
         final List<CommentResponseDto> comments = commentRepository.findAllByItemId(itemId)
@@ -100,8 +100,9 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemResponseDto> findAll(Long userId,PageRequest page) {
-        final List<ItemResponseDto> itemsList = itemRepository.findAllByOwnerId(userId,page)
+    public List<ItemResponseDto> findAll(Long userId, PageRequest page) {
+        chekUser(userId);
+        final List<ItemResponseDto> itemsList = itemRepository.findAllByOwnerId(userId, page)
                 .map(ItemMapper::toItemResponseDto)
                 .getContent();
         final List<Long> itemsId = itemsList
@@ -139,8 +140,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> searchItems(Long userId, String text, PageRequest page) {
-        if (!userRepository.existsById(userId))
-            throw new NotFoundExceptionEntity("Пользователь с идентификатором : " + userId + " не найден.");
+        chekUser(userId);
         return itemRepository.findAllByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndIsAvailableIsTrue(text, text, page)
                 .map(ItemMapper::toItemDto)
                 .getContent();
@@ -150,8 +150,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public CommentResponseDto createComment(Long userId, CommentDto commentDto, Long itemId) {
         final Comment comment = toComment(commentDto);
-        final User author = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundExceptionEntity("Пользователь с идентификатором : " + userId + " не найден."));
+        final User author = chekUser(userId);
         final Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundExceptionEntity("Item с идентификатором : " + itemId + " не найден."));
         List<Booking> bookings = bookingRepository.findByItem_IdAndEndIsBefore(itemId, comment.getCreated())
@@ -165,5 +164,10 @@ public class ItemServiceImpl implements ItemService {
         comment.setItem(item);
         commentRepository.save(comment);
         return toCommentResponseDto(comment);
+    }
+
+    private User chekUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundExceptionEntity("Пользователь с идентификатором : " + userId + " не найден."));
     }
 }

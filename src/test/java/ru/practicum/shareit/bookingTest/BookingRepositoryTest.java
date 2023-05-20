@@ -1,4 +1,4 @@
-package ru.practicum.shareit;
+package ru.practicum.shareit.bookingTest;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,7 +69,7 @@ public class BookingRepositoryTest {
     void verifyFindByBooker_IdAndEndIsBefore() {
         var userId = user.getId();
         var date = LocalDateTime.now();
-        List<Booking> result = bookingRepository.findByBooker_IdAndEndIsBefore(userId, date, page)
+        var result = bookingRepository.findByBooker_IdAndEndIsBefore(userId, date, page)
                 .stream()
                 .collect(Collectors.toList());
 
@@ -80,7 +80,7 @@ public class BookingRepositoryTest {
     @Test
     void verifyFindAllByBooker_Id() {
         var userId = user.getId();
-        List<Booking> result = bookingRepository.findAllByBooker_Id(userId, page)
+        var result = bookingRepository.findAllByBooker_Id(userId, page)
                 .stream()
                 .collect(Collectors.toList());
 
@@ -92,7 +92,7 @@ public class BookingRepositoryTest {
     void verifyFindByBooker_IdAndStartIsBeforeAndEndIsAfter() {
         var userId = user.getId();
         var date = LocalDateTime.now();
-        List<Booking> result = bookingRepository.findByBooker_IdAndStartIsAfter(userId, date, page)
+        var result = bookingRepository.findByBooker_IdAndStartIsAfter(userId, date, page)
                 .stream()
                 .collect(Collectors.toList());
 
@@ -103,7 +103,7 @@ public class BookingRepositoryTest {
     @Test
     void verifyFindAllByItem_IdIn() {
         var itemId = item.getId();
-        List<Booking> result = bookingRepository.findAllByItem_IdIn(List.of(itemId), page)
+        var result = bookingRepository.findAllByItem_IdIn(List.of(itemId), page)
                 .stream()
                 .collect(Collectors.toList());
 
@@ -115,7 +115,7 @@ public class BookingRepositoryTest {
     void verifyFindByItem_IdInAndStartIsBeforeAndEndIsAfter() {
         var itemId = item.getId();
         var date = LocalDateTime.now();
-        List<Booking> result = bookingRepository.findByItem_IdInAndStartIsBeforeAndEndIsAfter(List.of(itemId), date, date, page)
+        var result = bookingRepository.findByItem_IdInAndStartIsBeforeAndEndIsAfter(List.of(itemId), date, date, page)
                 .stream()
                 .collect(Collectors.toList());
 
@@ -127,7 +127,7 @@ public class BookingRepositoryTest {
     void verifyFindByItem_IdInAndEndIsBefore() {
         var itemId = item.getId();
         var date = LocalDateTime.now();
-        List<Booking> result = bookingRepository.findByItem_IdInAndEndIsBefore(List.of(itemId), date, page)
+        var result = bookingRepository.findByItem_IdInAndEndIsBefore(List.of(itemId), date, page)
                 .stream()
                 .collect(Collectors.toList());
 
@@ -140,7 +140,7 @@ public class BookingRepositoryTest {
         var itemId = item.getId();
         var date = LocalDateTime.now();
         var status = BookingStatus.WAITING;
-        List<Booking> result = bookingRepository.findByItem_IdInAndStartIsAfterAndStatusIs(List.of(itemId), date, status, page)
+        var result = bookingRepository.findByItem_IdInAndStartIsAfterAndStatusIs(List.of(itemId), date, status, page)
                 .stream()
                 .collect(Collectors.toList());
 
@@ -153,7 +153,7 @@ public class BookingRepositoryTest {
         var userId = user.getId();
         var date = LocalDateTime.now();
         var status = BookingStatus.WAITING;
-        List<Booking> result = bookingRepository.findByBooker_IdAndStartIsAfterAndStatusIs(userId, date, status, page)
+        var result = bookingRepository.findByBooker_IdAndStartIsAfterAndStatusIs(userId, date, status, page)
                 .stream()
                 .collect(Collectors.toList());
 
@@ -165,7 +165,7 @@ public class BookingRepositoryTest {
     void verifyFindByItem_IdInAndStartIsAfter() {
         var itemId = item.getId();
         var status = BookingStatus.WAITING;
-        List<Booking> result = bookingRepository.findAllByItem_IdInAndStatusIs(List.of(itemId), status);
+        var result = bookingRepository.findAllByItem_IdInAndStatusIs(List.of(itemId), status);
 
         assertThat(result, notNullValue());
         assertThat(result.size(), equalTo(1));
@@ -175,25 +175,27 @@ public class BookingRepositoryTest {
     void verifyFindByItem_IdAndStatusIs() {
         var status = BookingStatus.WAITING;
         var itemId = item.getId();
-        List<Booking> result = bookingRepository.findByItem_IdAndStatusIs(itemId, status);
+        var result = bookingRepository.findByItem_IdAndStatusIs(itemId, status);
 
         assertThat(result, notNullValue());
         assertThat(result.size(), equalTo(1));
     }
+
     @Test
     void verifyFindByItem_IdAndEndIsBefore() {
         var itemId = item.getId();
         var date = LocalDateTime.now();
-        List<Booking> result = bookingRepository.findByItem_IdAndEndIsBefore(itemId, date);
+        var result = bookingRepository.findByItem_IdAndEndIsBefore(itemId, date);
 
         assertThat(result, notNullValue());
         assertThat(result.size(), equalTo(0));
     }
+
     @Test
     void verifyFindByIdAndItemOwnerId() {
         var userId = user.getId();
         var bookingId = booking.getId();
-        var result = bookingRepository.findByIdAndItemOwnerId(bookingId,userId);
+        var result = bookingRepository.findByIdAndItemOwnerId(bookingId, userId);
 
         assertThat(result, notNullValue());
         assertThat(result.get().getStatus(), equalTo(BookingStatus.WAITING));

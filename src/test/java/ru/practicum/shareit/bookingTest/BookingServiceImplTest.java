@@ -1,4 +1,4 @@
-package ru.practicum.shareit;
+package ru.practicum.shareit.bookingTest;
 
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Assertions;
@@ -6,7 +6,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
@@ -25,7 +24,6 @@ import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
-
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -58,12 +56,12 @@ public class BookingServiceImplTest {
 
         when(bookingRepository.save(any()))
                 .thenAnswer(invocation -> invocation.getArgument(0));
+        when(userRepository.findById(user.getId()))
+                .thenReturn(Optional.of(user));
     }
 
     @Test
     void getAllBookingsByBooker() {
-        when(userRepository.findById(user.getId()))
-                .thenReturn(Optional.of(user));
         when(bookingRepository.findAllByBooker_Id(any(), any()))
                 .thenReturn(Page.empty());
 
@@ -77,8 +75,6 @@ public class BookingServiceImplTest {
 
     @Test
     void getPastBookingsByBooker() {
-        when(userRepository.findById(user.getId()))
-                .thenReturn(Optional.of(user));
         when(bookingRepository.findByBooker_IdAndEndIsBefore(any(), any(), any()))
                 .thenReturn(Page.empty());
 
@@ -92,8 +88,6 @@ public class BookingServiceImplTest {
 
     @Test
     void getFutureBookingsByBooker() {
-        when(userRepository.findById(user.getId()))
-                .thenReturn(Optional.of(user));
         when(bookingRepository.findByBooker_IdAndStartIsAfter(any(), any(), any()))
                 .thenReturn(Page.empty());
 
@@ -107,8 +101,6 @@ public class BookingServiceImplTest {
 
     @Test
     void getCurrentBookingsByBooker() {
-        when(userRepository.findById(user.getId()))
-                .thenReturn(Optional.of(user));
         when(bookingRepository.findByBooker_IdAndStartIsBeforeAndEndIsAfter(any(), any(), any(), any()))
                 .thenReturn(Page.empty());
 
@@ -122,8 +114,6 @@ public class BookingServiceImplTest {
 
     @Test
     void getWaitingBookingsByBooker() {
-        when(userRepository.findById(user.getId()))
-                .thenReturn(Optional.of(user));
         when(bookingRepository.findByBooker_IdAndStartIsAfterAndStatusIs(any(), any(), any(), any()))
                 .thenReturn(Page.empty());
 
@@ -137,8 +127,6 @@ public class BookingServiceImplTest {
 
     @Test
     void getRejectedBookingsByBooker() {
-        when(userRepository.findById(user.getId()))
-                .thenReturn(Optional.of(user));
         when(bookingRepository.findByBooker_IdAndStartIsAfterAndStatusIs(any(), any(), any(), any()))
                 .thenReturn(Page.empty());
 
@@ -152,8 +140,6 @@ public class BookingServiceImplTest {
 
     @Test
     void getAllOwnerBookings() {
-        when(userRepository.findById(user.getId()))
-                .thenReturn(Optional.of(user));
         when(bookingRepository.findAllByItem_IdIn(any(), any()))
                 .thenReturn(Page.empty());
 
@@ -167,8 +153,6 @@ public class BookingServiceImplTest {
 
     @Test
     void getPastOwnerBookings() {
-        when(userRepository.findById(user.getId()))
-                .thenReturn(Optional.of(user));
         when(bookingRepository.findByItem_IdInAndEndIsBefore(any(), any(), any()))
                 .thenReturn(Page.empty());
 
@@ -182,8 +166,6 @@ public class BookingServiceImplTest {
 
     @Test
     void getFutureOwnerBookings() {
-        when(userRepository.findById(user.getId()))
-                .thenReturn(Optional.of(user));
         when(bookingRepository.findByItem_IdInAndStartIsAfter(any(), any(), any()))
                 .thenReturn(Page.empty());
 
@@ -197,8 +179,6 @@ public class BookingServiceImplTest {
 
     @Test
     void getCurrentOwnerBookings() {
-        when(userRepository.findById(user.getId()))
-                .thenReturn(Optional.of(user));
         when(bookingRepository.findByItem_IdInAndStartIsBeforeAndEndIsAfter(any(), any(), any(), any()))
                 .thenReturn(Page.empty());
 
@@ -212,8 +192,6 @@ public class BookingServiceImplTest {
 
     @Test
     void getWaitingOwnerBookings() {
-        when(userRepository.findById(user.getId()))
-                .thenReturn(Optional.of(user));
         when(bookingRepository.findByItem_IdInAndStartIsAfterAndStatusIs(any(), any(), any(), any()))
                 .thenReturn(Page.empty());
 
@@ -227,8 +205,6 @@ public class BookingServiceImplTest {
 
     @Test
     void getRejectedOwnerBookings() {
-        when(userRepository.findById(user.getId()))
-                .thenReturn(Optional.of(user));
         when(bookingRepository.findByItem_IdInAndStartIsAfterAndStatusIs(any(), any(), any(), any()))
                 .thenReturn(Page.empty());
 
@@ -270,8 +246,6 @@ public class BookingServiceImplTest {
     void getBooking() {
         var bookingId = 2L;
 
-        when(userRepository.findById(user.getId()))
-                .thenReturn(Optional.of(user));
         when(bookingRepository.findById(bookingId))
                 .thenReturn(Optional.empty());
 
@@ -295,8 +269,6 @@ public class BookingServiceImplTest {
         booking.setBooker(user);
         booking.setItem(item);
 
-        when(userRepository.findById(user.getId()))
-                .thenReturn(Optional.of(user));
         when(bookingRepository.findByIdAndItemOwnerId(bookingId, user.getId()))
                 .thenReturn(Optional.of(booking));
 
@@ -323,8 +295,6 @@ public class BookingServiceImplTest {
         booking.setBooker(user);
         booking.setItem(item);
 
-        when(userRepository.findById(user.getId()))
-                .thenReturn(Optional.of(user));
         when(bookingRepository.findByIdAndItemOwnerId(bookingId, user.getId()))
                 .thenReturn(Optional.of(booking));
 
