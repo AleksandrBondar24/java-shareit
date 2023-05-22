@@ -44,21 +44,21 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         if (!checkUser(userId))
             throw new NotFoundExceptionEntity("Пользователь с идентификатором : " + userId + " не найден.");
         final Sort sort = Sort.by("created").descending();
-        final List<ItemRequestDto> itemRequestDto = itemRequestRepository.findAllByRequestor_Id(userId, sort)
+        final List<ItemRequestDto> itemRequestDtoList = itemRequestRepository.findAllByRequestor_Id(userId, sort)
                 .stream()
                 .map(ItemRequestMapper::toItemRequestDto)
                 .collect(Collectors.toList());
-        return addResponse(itemRequestDto);
+        return addDetailsToRequests(itemRequestDtoList);
     }
 
     @Override
     public List<ItemRequestDto> findAll(Long userId, PageRequest page) {
         if (!checkUser(userId))
             throw new NotFoundExceptionEntity("Пользователь с идентификатором : " + userId + " не найден.");
-        final List<ItemRequestDto> itemRequestDto = itemRequestRepository.findAllByRequestor_IdNot(userId, page)
+        final List<ItemRequestDto> itemRequestDtoList = itemRequestRepository.findAllByRequestor_IdNot(userId, page)
                 .map(ItemRequestMapper::toItemRequestDto)
                 .getContent();
-        return addResponse(itemRequestDto);
+        return addDetailsToRequests(itemRequestDtoList);
     }
 
     @Override
@@ -79,8 +79,8 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         return userRepository.existsById(userId);
     }
 
-    private List<ItemRequestDto> addResponse(List<ItemRequestDto> itemRequestDto) {
-        final List<Long> listRequestIds = itemRequestDto
+    private List<ItemRequestDto> addDetailsToRequests(List<ItemRequestDto> itemRequestDtoList) {
+        final List<Long> listRequestIds = itemRequestDtoList
                 .stream()
                 .map(ItemRequestDto::getId)
                 .collect(Collectors.toList());
@@ -88,11 +88,11 @@ public class ItemRequestServiceImpl implements ItemRequestService {
                 .stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
-        itemRequestDto
+        itemRequestDtoList
                 .forEach(r -> r.setItems(itemDtoList
                         .stream()
                         .filter(itemDto -> itemDto.getRequestId().equals(r.getId()))
                         .collect(Collectors.toList())));
-        return itemRequestDto;
+        return itemRequestDtoList;
     }
 }

@@ -30,6 +30,7 @@ public class UserControllerTest {
 
     @Autowired
     private MockMvc mvc;
+    private final Long USERID = 1L;
 
     private final UserDto userDto = new UserDto(
             null,
@@ -62,29 +63,27 @@ public class UserControllerTest {
 
     @Test
     void getUserById() throws Exception {
-        var userId = 1L;
-        when(userService.findById(userId))
+        when(userService.findById(USERID))
                 .thenReturn(userDtoResponse);
 
-        mvc.perform(get("/users/" + userId)
+        mvc.perform(get("/users/" + USERID)
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .header("X-Sharer-User-Id", userId)
+                        .header("X-Sharer-User-Id", USERID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.ALL))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userDtoResponse.getId()))
                 .andExpect(jsonPath("$.name").value(userDtoResponse.getName()))
                 .andExpect(jsonPath("$.email").value(userDtoResponse.getEmail()));
-        verify(userService, times(1)).findById(userId);
+        verify(userService, times(1)).findById(USERID);
     }
 
     @Test
     void updateUser() throws Exception {
-        var userId = 1L;
-        when(userService.update(userId, userDto))
+        when(userService.update(USERID, userDto))
                 .thenReturn(userDtoResponse);
 
-        mvc.perform(patch("/users/" + userId)
+        mvc.perform(patch("/users/" + USERID)
                         .content(mapper.writeValueAsString(userDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -93,17 +92,15 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.id").value(userDtoResponse.getId()))
                 .andExpect(jsonPath("$.name").value(userDtoResponse.getName()))
                 .andExpect(jsonPath("$.email").value(userDtoResponse.getEmail()));
-        verify(userService, times(1)).update(userId, userDto);
+        verify(userService, times(1)).update(USERID, userDto);
     }
 
     @Test
     void deleteUser() throws Exception {
-        var userId = 1L;
-
-        mvc.perform(delete("/users/" + userId)
+        mvc.perform(delete("/users/" + USERID)
                         .accept(MediaType.ALL))
                 .andExpect(status().isOk());
-        verify(userService, times(1)).delete(userId);
+        verify(userService, times(1)).delete(USERID);
     }
 
     @Test
