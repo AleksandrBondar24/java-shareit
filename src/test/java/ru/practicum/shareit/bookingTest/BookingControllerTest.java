@@ -43,9 +43,9 @@ public class BookingControllerTest {
 
     @Autowired
     private MockMvc mvc;
-    private final Long USER_ID = 1L;
-    private final int FROM = 0;
-    private final int SIZE = 10;
+    private final Long userId = 1L;
+    private final int from = 0;
+    private final int size = 10;
 
     private final BookingRequestDto bookingRequestDto = new BookingRequestDto(
             1L,
@@ -69,7 +69,7 @@ public class BookingControllerTest {
         mvc.perform(post("/bookings")
                         .content(mapper.writeValueAsString(bookingRequestDto))
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .header("X-Sharer-User-Id", USER_ID)
+                        .header("X-Sharer-User-Id", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.ALL))
                 .andExpect(status().isOk())
@@ -85,100 +85,100 @@ public class BookingControllerTest {
         boolean approved = Boolean.TRUE;
         bookingDto.setStatus(BookingStatus.APPROVED);
 
-        when(bookingService.update(bookingDto.getId(), USER_ID, approved))
+        when(bookingService.update(bookingDto.getId(), userId, approved))
                 .thenReturn(bookingDto);
 
         mvc.perform(patch("/bookings/" + bookingDto.getId())
                         .characterEncoding(StandardCharsets.UTF_8)
                         .param("approved", "true")
-                        .header("X-Sharer-User-Id", USER_ID)
+                        .header("X-Sharer-User-Id", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.ALL))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(bookingDto.getStatus().name()));
-        verify(bookingService, times(1)).update(bookingDto.getId(), USER_ID, approved);
+        verify(bookingService, times(1)).update(bookingDto.getId(), userId, approved);
     }
 
     @Test
     void getBookingById() throws Exception {
-        when(bookingService.findById(USER_ID, bookingDto.getId()))
+        when(bookingService.findById(userId, bookingDto.getId()))
                 .thenReturn(bookingDto);
 
         mvc.perform(get("/bookings/" + bookingDto.getId())
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .header("X-Sharer-User-Id", USER_ID)
+                        .header("X-Sharer-User-Id", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.ALL))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(bookingDto.getId()))
                 .andExpect(jsonPath("$.status").value(BookingStatus.WAITING.name()));
-        verify(bookingService, times(1)).findById(USER_ID, bookingDto.getId());
+        verify(bookingService, times(1)).findById(userId, bookingDto.getId());
     }
 
     @Test
     void getBookingsByBooker() throws Exception {
         var state = "FUTURE";
         final var sort = Sort.by("start").descending();
-        final var page = PageRequest.of(FROM > 0 ? FROM / SIZE : 0, SIZE, sort);
+        final var page = PageRequest.of(from > 0 ? from / size : 0, size, sort);
 
-        when(bookingService.findAllByBooker(USER_ID, state, page))
+        when(bookingService.findAllByBooker(userId, state, page))
                 .thenReturn(Collections.emptyList());
 
         mvc.perform(get("/bookings")
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .header("X-Sharer-User-Id", USER_ID)
+                        .header("X-Sharer-User-Id", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("state", state)
-                        .param("from", String.valueOf(FROM))
-                        .param("size", String.valueOf(SIZE))
+                        .param("from", String.valueOf(from))
+                        .param("size", String.valueOf(size))
                         .accept(MediaType.ALL))
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
-        verify(bookingService, times(1)).findAllByBooker(USER_ID, state, page);
+        verify(bookingService, times(1)).findAllByBooker(userId, state, page);
     }
 
     @Test
     void getBookingsByOwner() throws Exception {
         var state = "ALL";
         final var sort = Sort.by("start").descending();
-        final var page = PageRequest.of(FROM > 0 ? FROM / SIZE : 0, SIZE, sort);
+        final var page = PageRequest.of(from > 0 ? from / size : 0, size, sort);
 
-        when(bookingService.findAllByOwner(USER_ID, state, page))
+        when(bookingService.findAllByOwner(userId, state, page))
                 .thenReturn(Collections.emptyList());
 
         mvc.perform(get("/bookings/owner")
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .header("X-Sharer-User-Id", USER_ID)
+                        .header("X-Sharer-User-Id", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("state", state)
-                        .param("from", String.valueOf(FROM))
-                        .param("size", String.valueOf(SIZE))
+                        .param("from", String.valueOf(from))
+                        .param("size", String.valueOf(size))
                         .accept(MediaType.ALL))
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
-        verify(bookingService, times(1)).findAllByOwner(USER_ID, state, page);
+        verify(bookingService, times(1)).findAllByOwner(userId, state, page);
     }
 
     @Test
     void shouldReturnFailOnUnknownStatus() throws Exception {
         var state = "NEVER";
         final var sort = Sort.by("start").descending();
-        var page = PageRequest.of(FROM > 0 ? FROM / SIZE : 0, SIZE, sort);
+        var page = PageRequest.of(from > 0 ? from / size : 0, size, sort);
 
-        when(bookingService.findAllByBooker(USER_ID, state, page))
+        when(bookingService.findAllByBooker(userId, state, page))
                 .thenThrow(new NotFoundException("Unknown state: " + state));
 
         mvc.perform(get("/bookings")
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .header("X-Sharer-User-Id", USER_ID)
+                        .header("X-Sharer-User-Id", userId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .param("from", String.valueOf(FROM))
-                        .param("size", String.valueOf(SIZE))
+                        .param("from", String.valueOf(from))
+                        .param("size", String.valueOf(size))
                         .param("state", state)
                         .accept(MediaType.ALL))
                 .andExpect(status().is4xxClientError())
                 .andExpect(content().json("{\"error\":\"Unknown state: " + state + "\"}"));
-        verify(bookingService, times(1)).findAllByBooker(USER_ID, state, page);
+        verify(bookingService, times(1)).findAllByBooker(userId, state, page);
     }
 }
 
