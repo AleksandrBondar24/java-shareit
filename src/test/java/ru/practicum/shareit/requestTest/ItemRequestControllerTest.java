@@ -34,7 +34,7 @@ public class ItemRequestControllerTest {
 
     @Autowired
     private MockMvc mvc;
-    private final Long USERID = 1L;
+    private final Long USER_ID = 1L;
 
     private final ItemRequestDto itemRequestDto = new ItemRequestDto(
             null,
@@ -57,7 +57,7 @@ public class ItemRequestControllerTest {
         mvc.perform(post("/requests")
                         .content(mapper.writeValueAsString(itemRequestDto))
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .header("X-Sharer-User-Id", USERID)
+                        .header("X-Sharer-User-Id", USER_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.ALL))
                 .andExpect(status().isOk())
@@ -68,17 +68,17 @@ public class ItemRequestControllerTest {
 
     @Test
     void getAllByOwner() throws Exception {
-        when(itemRequestService.findAllByOwner(USERID))
+        when(itemRequestService.findAllByOwner(USER_ID))
                 .thenReturn(Collections.emptyList());
 
         mvc.perform(get("/requests")
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .header("X-Sharer-User-Id", USERID)
+                        .header("X-Sharer-User-Id", USER_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.ALL))
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
-        verify(itemRequestService, times(1)).findAllByOwner(USERID);
+        verify(itemRequestService, times(1)).findAllByOwner(USER_ID);
     }
 
     @Test
@@ -87,35 +87,35 @@ public class ItemRequestControllerTest {
         var size = 10;
         final Sort sort = Sort.by("created").descending();
         final var page = PageRequest.of(from > 0 ? from / size : 0, size, sort);
-        when(itemRequestService.findAll(USERID, page))
+        when(itemRequestService.findAll(USER_ID, page))
                 .thenReturn(Collections.emptyList());
 
         mvc.perform(get("/requests/all")
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .header("X-Sharer-User-Id", USERID)
+                        .header("X-Sharer-User-Id", USER_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("from", String.valueOf(from))
                         .param("size", String.valueOf(size))
                         .accept(MediaType.ALL))
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
-        verify(itemRequestService, times(1)).findAll(USERID, page);
+        verify(itemRequestService, times(1)).findAll(USER_ID, page);
     }
 
     @Test
     void getFindByRequestId() throws Exception {
         var requestId = 1L;
-        when(itemRequestService.findByRequestId(USERID, requestId))
+        when(itemRequestService.findByRequestId(USER_ID, requestId))
                 .thenReturn(itemRequestDtoResponse);
 
         mvc.perform(get("/requests/" + requestId)
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .header("X-Sharer-User-Id", USERID)
+                        .header("X-Sharer-User-Id", USER_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.ALL))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(itemRequestDtoResponse.getId()))
                 .andExpect(jsonPath("$.description").value(itemRequestDtoResponse.getDescription()));
-        verify(itemRequestService, times(1)).findByRequestId(USERID, requestId);
+        verify(itemRequestService, times(1)).findByRequestId(USER_ID, requestId);
     }
 }

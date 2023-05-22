@@ -34,7 +34,7 @@ public class ItemControllerTest {
 
     @Autowired
     private MockMvc mvc;
-    private final Long USERID = 1L;
+    private final Long USER_ID = 1L;
     private final int FROM = 0;
     private final int SIZE = 10;
 
@@ -75,7 +75,7 @@ public class ItemControllerTest {
         mvc.perform(post("/items")
                         .content(mapper.writeValueAsString(itemDto))
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .header("X-Sharer-User-Id", USERID)
+                        .header("X-Sharer-User-Id", USER_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.ALL))
                 .andExpect(status().isOk())
@@ -89,10 +89,10 @@ public class ItemControllerTest {
         when(itemService.update(anyLong(), anyLong(), any()))
                 .thenReturn(itemDto);
 
-        mvc.perform(patch("/items/" + USERID)
+        mvc.perform(patch("/items/" + USER_ID)
                         .content(mapper.writeValueAsString(itemDto))
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .header("X-Sharer-User-Id", USERID)
+                        .header("X-Sharer-User-Id", USER_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.ALL))
                 .andExpect(status().isOk())
@@ -108,7 +108,7 @@ public class ItemControllerTest {
 
         mvc.perform(get("/items/" + itemDto.getId())
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .header("X-Sharer-User-Id", USERID)
+                        .header("X-Sharer-User-Id", USER_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.ALL))
                 .andExpect(status().isOk())
@@ -121,19 +121,19 @@ public class ItemControllerTest {
     void getAllItems() throws Exception {
         final var page = PageRequest.of(FROM > 0 ? FROM / SIZE : 0, SIZE);
 
-        when(itemService.findAll(USERID, page))
+        when(itemService.findAll(USER_ID, page))
                 .thenReturn(Collections.emptyList());
 
         mvc.perform(get("/items")
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .header("X-Sharer-User-Id", USERID)
+                        .header("X-Sharer-User-Id", USER_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("from", String.valueOf(FROM))
                         .param("size", String.valueOf(SIZE))
                         .accept(MediaType.ALL))
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
-        verify(itemService, times(1)).findAll(USERID, page);
+        verify(itemService, times(1)).findAll(USER_ID, page);
     }
 
     @Test
@@ -141,12 +141,12 @@ public class ItemControllerTest {
         var text = "Дрель";
         final var page = PageRequest.of(FROM > 0 ? FROM / SIZE : 0, SIZE);
 
-        when(itemService.searchItems(USERID, text, page))
+        when(itemService.searchItems(USER_ID, text, page))
                 .thenReturn(Collections.emptyList());
 
         mvc.perform(get("/items/search")
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .header("X-Sharer-User-Id", USERID)
+                        .header("X-Sharer-User-Id", USER_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("text", text)
                         .param("from", String.valueOf(FROM))
@@ -154,23 +154,23 @@ public class ItemControllerTest {
                         .accept(MediaType.ALL))
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
-        verify(itemService, times(1)).searchItems(USERID, text, page);
+        verify(itemService, times(1)).searchItems(USER_ID, text, page);
     }
 
     @Test
     void createComment() throws Exception {
         var itemId = 1L;
-        when(itemService.createComment(USERID, commentDto, itemId))
+        when(itemService.createComment(USER_ID, commentDto, itemId))
                 .thenReturn(commentResponseDto);
 
         mvc.perform(post("/items/" + itemId + "/comment")
                         .content(mapper.writeValueAsString(commentDto))
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .header("X-Sharer-User-Id", USERID)
+                        .header("X-Sharer-User-Id", USER_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.ALL))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(commentResponseDto.getId()));
-        verify(itemService, times(1)).createComment(USERID, commentDto, itemId);
+        verify(itemService, times(1)).createComment(USER_ID, commentDto, itemId);
     }
 }
