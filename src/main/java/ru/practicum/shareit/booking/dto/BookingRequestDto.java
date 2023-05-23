@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(force = true)
 @EqualsAndHashCode
 @ToString
-public class BookingJsonDto {
+public class BookingRequestDto {
     @NonNull
     private Long itemId;
 

@@ -2,6 +2,8 @@ package ru.practicum.shareit.item.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.CommentResponseDto;
@@ -11,6 +13,8 @@ import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.exeption.NotFoundException;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.Collections;
 import java.util.List;
 
@@ -18,14 +22,15 @@ import java.util.List;
 @RequestMapping("/items")
 @Slf4j
 @RequiredArgsConstructor
+@Validated
 public class ItemController {
     private final ItemService itemService;
 
     @PostMapping
     public ItemDto create(@RequestHeader("X-Sharer-User-Id") Long userId,
-                          @RequestBody ItemDto itemDto) {
+                          @Valid @RequestBody ItemDto itemDto) {
         validate(itemDto);
-        ItemDto createdItem = itemService.create(userId, itemDto);
+        final ItemDto createdItem = itemService.create(userId, itemDto);
         log.debug("Добавлен item с идентификатором : {}", createdItem.getId());
         return createdItem;
     }
@@ -34,7 +39,7 @@ public class ItemController {
     public ItemDto update(@RequestHeader("X-Sharer-User-Id") Long userId,
                           @PathVariable Long itemId,
                           @RequestBody ItemDto itemDto) {
-        ItemDto updateItem = itemService.update(userId, itemId, itemDto);
+        final ItemDto updateItem = itemService.update(userId, itemId, itemDto);
         log.debug("Item с идентификатором : " + itemId + " обновлен.");
         return updateItem;
     }
@@ -42,23 +47,30 @@ public class ItemController {
     @GetMapping("/{itemId}")
     public ItemResponseDto findById(@RequestHeader("X-Sharer-User-Id") Long userId,
                                     @PathVariable Long itemId) {
-        ItemResponseDto itemsDto = itemService.findById(itemId, userId);
+        final ItemResponseDto itemsDto = itemService.findById(itemId, userId);
         log.debug("Получен item с идентификатором : {}", itemId);
         return itemsDto;
     }
 
     @GetMapping
-    public List<ItemResponseDto> findAll(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        List<ItemResponseDto> findAllItem = itemService.findAll(userId);
+    public List<ItemResponseDto> findAll(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                         @PositiveOrZero @RequestParam(value = "from", defaultValue = "0") Integer from,
+                                         @Positive @RequestParam(value = "size", defaultValue = "10") Integer size) {
+        final PageRequest page = PageRequest.of(from > 0 ? from / size : 0, size);
+        final List<ItemResponseDto> findAllItem = itemService.findAll(userId, page);
         log.debug("Получен список всех item пользователя : {}", userId);
         return findAllItem;
     }
 
     @GetMapping("/search")
-    public List<ItemDto> searchItems(@RequestParam(value = "text") String text) {
+    public List<ItemDto> searchItems(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                     @RequestParam(value = "text") String text,
+                                     @Valid @PositiveOrZero @RequestParam(value = "from", defaultValue = "0") Integer from,
+                                     @Positive @RequestParam(value = "size", defaultValue = "10") Integer size) {
         if (text == null || text.isBlank())
             return Collections.emptyList();
-        List<ItemDto> items = itemService.searchItems(text);
+        final PageRequest page = PageRequest.of(from > 0 ? from / size : 0, size);
+        final List<ItemDto> items = itemService.searchItems(userId, text, page);
         log.debug("Получен список вещей по ключевому слову : {}", text);
         return items;
     }
@@ -67,7 +79,7 @@ public class ItemController {
     public CommentResponseDto createComment(@RequestHeader("X-Sharer-User-Id") Long userId,
                                             @Valid @RequestBody CommentDto commentDto,
                                             @PathVariable Long itemId) {
-        CommentResponseDto commentNew = itemService.createComment(userId, commentDto, itemId);
+        final CommentResponseDto commentNew = itemService.createComment(userId, commentDto, itemId);
         log.debug("Добавлен новый отзыв для вещи : {}", itemId);
         return commentNew;
     }
