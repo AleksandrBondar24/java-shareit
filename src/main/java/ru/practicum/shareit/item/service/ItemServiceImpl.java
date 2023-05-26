@@ -25,10 +25,7 @@ import ru.practicum.shareit.item.CommentMapper;
 import ru.practicum.shareit.item.ItemMapper;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.booking.BookingMapper.toBookingItemDto;
@@ -109,10 +106,12 @@ public class ItemServiceImpl implements ItemService {
                 .stream()
                 .map(ItemResponseDto::getId)
                 .collect(Collectors.toList());
+        final List<Comment> comments = commentRepository.findAll();
         final List<Booking> bookingList = bookingRepository.findAllByItem_IdInAndStatusIs(itemsId, BookingStatus.APPROVED);
         return itemsList
                 .stream()
-                .map(itemsDto -> setDateBookings(itemsDto, bookingList))
+                .map(itemDto -> setDateBookings(itemDto, bookingList))
+                .map(itemDto -> addCommentsToItem(itemDto, comments))
                 .collect(Collectors.toList());
     }
 
@@ -169,5 +168,15 @@ public class ItemServiceImpl implements ItemService {
     private User chekUser(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundExceptionEntity("Пользователь с идентификатором : " + userId + " не найден."));
+    }
+
+    private ItemResponseDto addCommentsToItem(ItemResponseDto item, List<Comment> comments) {
+        List<CommentResponseDto> commentResponseDtoList = comments
+                .stream()
+                .filter(c -> c.getItem().getId().equals(item.getId()))
+                .map(CommentMapper::toCommentResponseDto)
+                .collect(Collectors.toList());
+        item.setComments(commentResponseDtoList);
+        return item;
     }
 }
