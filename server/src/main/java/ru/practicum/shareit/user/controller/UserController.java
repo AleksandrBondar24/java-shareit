@@ -1,0 +1,52 @@
+package ru.practicum.shareit.user.controller;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.service.UserService;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/users")
+@Slf4j
+@RequiredArgsConstructor
+public class UserController {
+    private final UserService userService;
+
+    @PostMapping
+    public UserDto create(@RequestBody UserDto userDto) {
+        UserDto createdUser = userService.create(userDto);
+        log.debug("Создан пользователь с идентификатором : {} ", createdUser.getId());
+        return createdUser;
+    }
+
+    @GetMapping("/{userId}")
+    public UserDto findById(@PathVariable Long userId) {
+        UserDto receivedUser = userService.findById(userId);
+        log.debug("Получен пользователь с идентификатором : {}", userId);
+        return receivedUser;
+    }
+
+    @PatchMapping("/{userId}")
+    public UserDto update(@RequestBody UserDto userDto,
+                          @PathVariable Long userId) {
+        UserDto updatedUser = userService.update(userId, userDto);
+        log.debug("Обновлен пользователь с идентификатором : {}", userId);
+        return updatedUser;
+    }
+
+    @DeleteMapping("/{userId}")
+    public void delete(@PathVariable Long userId) {
+        userService.delete(userId);
+        log.debug("Удален пользователь с идентификатором : {}", userId);
+    }
+
+    @GetMapping
+    public List<UserDto> findAll() {
+        List<UserDto> listAllUser = userService.findAll();
+        log.debug("Получен список всех пользоателей");
+        return listAllUser;
+    }
+}
