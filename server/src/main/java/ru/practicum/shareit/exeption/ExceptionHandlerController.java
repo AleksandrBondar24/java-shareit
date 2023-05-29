@@ -11,14 +11,21 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class ExceptionHandlerController {
     @ExceptionHandler
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
-    private ErrorResponse exceptionHandler(NotFoundExceptionEntity e) {
+    private ErrorResponse exceptionHandler(final NotFoundExceptionEntity e) {
         log.warn(e.getMessage());
         return new ErrorResponse(e.getMessage(), System.currentTimeMillis());
     }
 
     @ExceptionHandler
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-    private ErrorResponse exceptionHandler(NotFoundException e) {
+    private ErrorResponse exceptionHandler(final NotFoundException e) {
+        log.warn(e.getMessage());
+        return new ErrorResponse(e.getMessage(), System.currentTimeMillis());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+    private ErrorResponse handleThrowable(final Throwable e) {
         log.warn(e.getMessage());
         return new ErrorResponse(e.getMessage(), System.currentTimeMillis());
     }
