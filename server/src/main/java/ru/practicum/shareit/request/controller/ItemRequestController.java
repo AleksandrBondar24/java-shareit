@@ -17,7 +17,6 @@ import static ru.practicum.shareit.util.Util.*;
 @Slf4j
 @RequestMapping(path = "/requests")
 @RequiredArgsConstructor
-@Validated
 public class ItemRequestController {
     private final ItemRequestService itemRequestService;
 

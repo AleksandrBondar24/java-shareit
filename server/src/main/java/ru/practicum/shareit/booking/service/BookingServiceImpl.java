@@ -58,7 +58,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public BookingDto update(Long bookingId, Long userId, boolean isApproved) {
-        final User user = chekUser(userId);
+        chekUser(userId);
         Booking booking = bookingRepository.findByIdAndItemOwnerId(bookingId, userId)
                 .orElseThrow(() -> new NotFoundExceptionEntity("Booking с идентификатором : " + bookingId + " не найден."));
         if (!booking.getStatus().equals(BookingStatus.WAITING))
@@ -72,7 +72,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDto findById(Long userId, Long bookingId) {
-        final User user = chekUser(userId);
+        chekUser(userId);
         return toBookingDto(bookingRepository.findById(bookingId)
                 .filter(b -> Objects.equals(b.getBooker().getId(), userId) || Objects.equals(b.getItem().getOwner().getId(), userId))
                 .orElseThrow(() -> new NotFoundExceptionEntity("Booking с идентификатором : " + bookingId + " не найден.")));
@@ -81,7 +81,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<BookingDto> findAllByBooker(Long userId, String state, PageRequest page) {
         final BookingState bookingState = BookingState.valueOf(state);
-        final User user = chekUser(userId);
+        chekUser(userId);
         final LocalDateTime date = LocalDateTime.now();
         Page<Booking> bookings;
         switch (bookingState) {
@@ -115,7 +115,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<BookingDto> findAllByOwner(Long userId, String state, PageRequest page) {
         final BookingState bookingState = BookingState.valueOf(state);
-        final User user = chekUser(userId);
+        chekUser(userId);
         final List<Long> itemIdList = itemRepository.findAllByOwnerId(userId)
                 .stream()
                 .map(Item::getId)

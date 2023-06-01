@@ -24,6 +24,8 @@ import static ru.practicum.shareit.util.Util.*;
 @Validated
 public class BookingController {
     private final BookingClient bookingClient;
+    private final static String URL = "?state={state}&from={from}&size={size}";
+    private final static String URL_NEW = "/owner?state={state}&from={from}&size={size}";
 
     @GetMapping
     public ResponseEntity<Object> getBookings(@RequestHeader(USER_ID) long userId,
@@ -33,7 +35,7 @@ public class BookingController {
         BookingState state = BookingState.from(stateParam)
                 .orElseThrow(() -> new IllegalArgumentException("Unknown state: " + stateParam));
         log.info("Get booking with state {}, userId={}, from={}, size={}", stateParam, userId, from, size);
-        return bookingClient.getBookings(userId, state, from, size);
+        return bookingClient.getBookings(URL, userId, state, from, size);
     }
 
     @PostMapping
@@ -58,7 +60,7 @@ public class BookingController {
         BookingState state = ru.practicum.shareit.booking.dto.BookingState.from(stateParam)
                 .orElseThrow(() -> new IllegalArgumentException("Unknown state: " + stateParam));
         log.info("Get booking with state {}, userId={}, from={}, size={}", stateParam, ownerId, from, size);
-        return bookingClient.getBookingsByOwner(ownerId, state, from, size);
+        return bookingClient.getBookings(URL_NEW, ownerId, state, from, size);
     }
 
     @PatchMapping("/{bookingId}")
